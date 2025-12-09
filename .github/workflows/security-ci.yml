@@ -1,0 +1,44 @@
+name: 🛡️ Security & Quality CI
+
+# Dispara em qualquer push ou pull request na branch main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  security-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Baixa o código do repositório
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Configura o Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    # 3. Instala dependências
+    - name: Install Dependencies
+      run: npm ci
+
+    # 4. Auditoria de Segurança (Bloqueia se houver vulnerabilidade crítica)
+    - name: 🛡️ Security Audit (Dependencies)
+      run: npm audit --audit-level=high
+
+    # 5. Verificação de Tipagem (TypeScript)
+    - name: 📝 TypeScript Check
+      run: npx tsc --noEmit
+
+    # 6. Teste de Build (Simula a Vercel)
+    - name: 🏗️ Build Test
+      run: npm run build
+      env:
+        # Variáveis fake apenas para o build não falhar por falta de config
+        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "fake-key-for-build-process"
